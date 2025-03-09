@@ -12,3 +12,4 @@ Route::get('/hola', function () {
 });
 
 
+Router::get('/movies', [MovieController::class, 'index']);
