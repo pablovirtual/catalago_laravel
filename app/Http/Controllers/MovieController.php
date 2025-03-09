@@ -113,7 +113,29 @@ class MovieController extends Controller
             ], $e instanceof \Illuminate\Database\Eloquent\ModelNotFoundException ? 404 : 500);
         }
     }
+
+    //Metodo para eliminar una película
+    public function destroy($id){
+        try {
+            // Buscar la película
+            $movie = Movie::findOrFail($id);
+            
+            // Eliminar la película
+            $movie->delete();
+            
+            // Devolver respuesta exitosa
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Película eliminada con éxito',
+                'data' => $movie
+            ], 200);
+        } catch (Exception $e) {
+            // Devolver respuesta de error
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Error al eliminar la película',
+                'error' => $e->getMessage()
+            ], $e instanceof \Illuminate\Database\Eloquent\ModelNotFoundException ? 404 : 500);
+        }
+    }
 }
-
-
-
