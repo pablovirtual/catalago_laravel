@@ -72,5 +72,48 @@ class MovieController extends Controller
         }
     }
 
+    //Metodo para actualizar una película
+    public function update(Request $request, $id){
+        try {
+            //Buscar la pelicula
+            $movie = Movie::findOrFail($id);
 
+            //Validar los datos recibidos
+            $validator = validator::make($request->all(), [
+                'title' => 'string|max:255' ,
+                'synopsis' => 'string',
+                'year' => 'integer|min:1900|max:' . date('Y'),
+                'cover' => 'string|max:255',
+            ]);
+
+            //si la validacion falla, devolver los errores
+            if($validator->fails()) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Error de validación',
+                    'errors' => $validator->errors()
+                ], 422);
+            }
+
+            //Actualizar la pelicula
+            $movie->update($request->all());
+
+            //Devolver la respuesta existosa
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Pelicula actualizada con exito',
+                'data' => $movie
+            ], 200);
+        } catch (Exception $e) {
+            //Devolver respuesta de error
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Error al actualizar la película',
+                'error' => $e->getMessage()
+            ], $e instanceof \Illuminate\Database\Eloquent\ModelNotFoundException ? 404 : 500);
+        }
+    }
 }
+
+
+
