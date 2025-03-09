@@ -1,12 +1,11 @@
 <?php
 
-
-
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-
 use App\Models\Movie; // Importar el modelo Movie
+use Exception;
+use Illuminate\Support\Facades\Validator;
 
 class MovieController extends Controller
 {
@@ -20,12 +19,57 @@ class MovieController extends Controller
     }
     //Metodo para agregar una nueva pelicula
     public function store(Request $request){
-        $movie = Movie::create($request->all());//Crea una nueva película con los datos enviados
-        return response()->json($movie, 201);
+        try {
+            // Validar los datos recibidos
+            $validator = Validator::make($request->all(), [
+                'title' => 'required|string|max:255',
+                'synopsis' => 'required|string',
+                'year' => 'required|integer|min:1900|max:' . date('Y'),
+                'cover' => 'required|string|max:255',
+            ]);
+
+            // Si la validación falla, devolver los errores
+            if ($validator->fails()) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Error de validación',
+                    'errors' => $validator->errors()
+                ], 422);
+            }
+
+            // Crear la película en la base de datos
+            $movie = Movie::create($request->all());
+            
+            // Devolver respuesta exitosa
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Película creada con éxito',
+                'data' => $movie
+            ], 201);
+        } catch (Exception $e) {
+            // Devolver respuesta de error
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Error al crear la película',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
     //Metodo para obtener una película por su ID
     public function show($id){
-        return Movie::findOrFail($id);
+        try {
+            $movie = Movie::findOrFail($id);
+            return response()->json([
+                'status' => 'success',
+                'data' => $movie
+            ], 200);
+        } catch (Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'No se encontró la película con ID: ' . $id,
+                'error' => $e->getMessage()
+            ], 404);
+        }
     }
 
 
