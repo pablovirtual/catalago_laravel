@@ -33,7 +33,8 @@ Este proyecto permite:
 
 - **Laravel**: Framework PHP para el backend
 - **MySQL**: Sistema de gestión de base de datos
-- **XAMPP**: Entorno de desarrollo local
+- **Railway**: Plataforma de despliegue para backend y base de datos
+- **Angular**: Framework para el frontend (desplegado en Railway)
 
 ## Modelo de Datos
 
@@ -53,7 +54,7 @@ La entidad principal es `Movie` con los siguientes atributos:
 - MySQL
 - XAMPP o entorno similar
 
-### Instalación
+### Instalación Local
 
 1. Clonar el repositorio
 ```
@@ -91,14 +92,64 @@ mysql -u tu_usuario -p catalogo < BD_ctalogo.sql
 php artisan serve
 ```
 
-## Estado de Despliegue
+## Despliegue en Railway
 
-El proyecto está configurado para funcionar en un entorno local con XAMPP. Para el despliegue en producción, se recomienda:
+Este proyecto está configurado para ser desplegado en Railway, conectándose con el frontend Angular ya desplegado en `cataangularcas-production.up.railway.app`.
 
-1. Configurar un servidor web como Nginx o Apache
-2. Asegurar que la configuración de la base de datos sea segura para producción
-3. Establecer variables de entorno adecuadas
-4. Configurar HTTPS para peticiones seguras
+### Configuración de la Base de Datos MySQL en Railway
+
+1. **Crear una base de datos MySQL en Railway**:
+   - Iniciar sesión en [Railway](https://railway.app/)
+   - Crear un nuevo proyecto
+   - Seleccionar "Provision MySQL"
+   - Railway generará automáticamente las credenciales de conexión
+
+2. **Obtener credenciales de conexión**:
+   - En el dashboard de Railway, selecciona tu base de datos MySQL
+   - Ve a la pestaña "Connect"
+   - Encontrarás todas las variables de entorno necesarias (MYSQLHOST, MYSQLPORT, MYSQLDATABASE, MYSQLUSER, MYSQLPASSWORD)
+   - Estas variables serán utilizadas automáticamente por nuestro archivo `.env.railway`
+
+3. **Importar datos iniciales** (opcional):
+   - Puedes usar la consola SQL proporcionada por Railway
+   - O conectarte remotamente usando un cliente MySQL con las credenciales obtenidas
+   - Importa el archivo `BD_ctalogo.sql` o ejecuta las migraciones de Laravel
+
+### Despliegue del Backend (API Laravel) en Railway
+
+1. **Conectar el repositorio Git**:
+   - En el dashboard de Railway, crea un nuevo servicio
+   - Selecciona "Deploy from GitHub"
+   - Conecta tu repositorio de GitHub que contiene este código
+
+2. **Configurar variables de entorno**:
+   - Railway detectará automáticamente que es un proyecto Laravel
+   - Asegúrate de establecer `APP_KEY` (o se generará automáticamente durante el despliegue)
+   - Añade la variable `RAILWAY_DOCKERFILE_PATH` y déjala en blanco para usar Nixpacks
+
+3. **Conectar con la base de datos**:
+   - En el dashboard de Railway, haz clic en "New" → "Link existing service"
+   - Selecciona tu instancia de MySQL
+
+4. **Despliegue**:
+   - Railway usará automáticamente la configuración en `railway.json` y `.env.railway`
+   - El servicio se desplegará y estará disponible en una URL proporcionada por Railway
+   - Guarda esta URL, la necesitarás para configurar el frontend
+
+### Conectar Frontend Angular con el Backend
+
+1. **Actualizar la configuración del frontend**:
+   - En tu proyecto Angular desplegado (`cataangularcas-production.up.railway.app`)
+   - Actualiza la URL de la API para que apunte a tu backend recién desplegado
+   - Esto se hace generalmente en el archivo de entorno o de configuración del proyecto Angular
+   
+2. **Configurar CORS en el backend**:
+   - El backend ya está configurado para permitir solicitudes desde el dominio del frontend
+   - Si es necesario modificar esto, edita el middleware CORS en tu proyecto Laravel
+
+3. **Verificar la conexión**:
+   - Una vez desplegados ambos servicios, prueba que el frontend pueda comunicarse correctamente con el backend
+   - Verifica todas las funcionalidades: listado, creación, edición y eliminación de películas
 
 ## Endpoints de la API
 
@@ -116,10 +167,10 @@ Para utilizar la API, puedes realizar solicitudes HTTP a los endpoints mencionad
 
 ```
 # Listar todas las películas
-GET http://localhost:8000/movies
+GET https://[tu-api-url]/movies
 
 # Crear una nueva película
-POST http://localhost:8000/movies
+POST https://[tu-api-url]/movies
 Content-Type: application/json
 
 {
