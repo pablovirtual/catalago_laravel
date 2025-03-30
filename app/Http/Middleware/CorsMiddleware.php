@@ -17,17 +17,18 @@ class CorsMiddleware
      */
     public function handle(Request $request, Closure $next): Response
     {
-        $response = $next($request);
-        
-        // Para solicitudes OPTIONS (preflight)
+        // Manejar las solicitudes preflight OPTIONS antes de cualquier otro procesamiento
         if ($request->isMethod('OPTIONS')) {
-            $response = response('', 200);
+            $response = new Response('', 200);
+        } else {
+            $response = $next($request);
         }
         
-        // Agregar encabezados para permitir solicitudes desde el frontend en Railway
-        $response->headers->set('Access-Control-Allow-Origin', '*');
+        // Agregar los encabezados CORS necesarios
+        $response->headers->set('Access-Control-Allow-Origin', 'https://cataangularcas-production.up.railway.app');
         $response->headers->set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-        $response->headers->set('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, X-CSRF-TOKEN');
+        $response->headers->set('Access-Control-Allow-Headers', 'X-Requested-With, Content-Type, Authorization, X-CSRF-TOKEN');
+        $response->headers->set('Access-Control-Allow-Credentials', 'true');
         $response->headers->set('Access-Control-Max-Age', '86400'); // 24 horas
         
         return $response;
