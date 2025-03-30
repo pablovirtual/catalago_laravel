@@ -5,6 +5,8 @@ namespace App\Providers;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\Response;
 use Illuminate\Http\Request;
+use Illuminate\Foundation\Http\Kernel;
+use App\Http\Middleware\CorsMiddleware;
 
 class CorsServiceProvider extends ServiceProvider
 {
@@ -21,8 +23,9 @@ class CorsServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        // Registrar middleware global para CORS
-        $this->app->middleware(\App\Http\Middleware\CorsMiddleware::class);
+        // Registrar el middleware en el grupo web y api
+        $kernel = $this->app->make(Kernel::class);
+        $kernel->prependMiddleware(CorsMiddleware::class);
         
         // Agregar un evento para después de enviar respuestas
         Response::macro('cors', function ($request) {
